@@ -30,7 +30,7 @@ module EX_mem_reg(
     reg [31:0] alu_result_out, reg [31:0] sw_data_out,
     reg [2:0] mem_op_out, reg [2:0] reg_write_out 
     );
-    always @(*)
+    always @(posedge cpu_clk or negedge rst)
     begin
         if (~rst) begin
             nop_out <= 0;

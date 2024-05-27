@@ -21,13 +21,13 @@
 
 
 module mem_WB_reg(
-    input clk, rst, nop_in, sr_ctrl,
+    input cpu_clk, rst, nop_in, sr_ctrl,
     [4:0] dst_in, [31:0] alu_data_in, [31:0] mem_data_in,
     [2:0] reg_write_in,
     output reg [4:0] dst_out, reg [31:0] alu_data_out, reg [31:0] mem_data_out,
     reg [2:0] reg_write_out
     );
-    always @(*)
+    always @(posedge cpu_clk or negedge rst)
         begin
             if (~rst) begin
                 dst_out <= 0;
