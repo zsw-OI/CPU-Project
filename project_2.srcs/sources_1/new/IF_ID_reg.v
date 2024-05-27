@@ -21,20 +21,24 @@
 
 
 module IF_ID_reg(
-    input rst, cpu_clk, [31:0]inst_in, nop_in, sr_ctrl,
-    output reg [31:0]inst_out, nop_out
+    input rst, cpu_clk, nop_in, sr_ctrl,
+    [31:0]inst_in, [31:0] pc_in, 
+    output reg nop_out,
+    reg [31:0] inst_out, reg [31:0] pc_out
     );
     always @(posedge cpu_clk or negedge rst) 
         begin
             if (~rst) begin
                 inst_out <= 0;
                 nop_out <= 0;
+                pc_out <= 0;
             end
             else begin
                 case (sr_ctrl)
                 SR_NOP: begin
                     inst_out <= 0;
                     nop_out <= 1;
+                    pc_out <= 0;
                 end
                     
                 SR_REMAIN: begin
@@ -44,10 +48,12 @@ module IF_ID_reg(
                     if (nop_in) begin
                         inst_out <= 0;
                         nop_out <= 1;
+                        pc_out <= 0;
                     end
                     else begin
                         inst_out <= inst_in;
                         nop_out <= 0;
+                        pc_out <= pc_in;
                     end
                     
                 end
