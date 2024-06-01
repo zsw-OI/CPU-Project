@@ -1,4 +1,5 @@
 `timescale 1ns / 1ps
+
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
 // Engineer: 
@@ -21,16 +22,17 @@
 
 
 module IF_ID_reg(
-    input rst, cpu_clk, nop_in, sr_ctrl,
-    [31:0]inst_in, [31:0] pc_in, 
+    input rst, input cpu_clk, input nop_in, input [1:0]sr_ctrl,
+    input [31:0]inst_in, input [31:0] pc_in, 
     output reg nop_out,
-    reg [31:0] inst_out, reg [31:0] pc_out
+    output reg [31:0] inst_out, output reg [31:0] pc_out
     );
+    `include "constants.v"
     always @(posedge cpu_clk or negedge rst) 
         begin
             if (~rst) begin
                 inst_out <= 0;
-                nop_out <= 0;
+                nop_out <= 1;
                 pc_out <= 0;
             end
             else begin

@@ -21,7 +21,13 @@
 
 
 module pc_calculator( // todo: combinatorical logic, connect to pc_reg
-    
+    input [31:0] pc,
+    input branch,
+    input jmp,
+    input [31:0] offset,
+    output [31:0] nxt_pc
+);
 
-    );
+assign nxt_pc = jmp ? offset : (branch ? pc - 4 + offset: pc + 4);
+
 endmodule

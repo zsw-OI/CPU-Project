@@ -21,9 +21,37 @@
 
 
 module uart_io(
-    input uart_rst, uart_clk_i, uart_rx,
-          
-    output uart_clk_o, inst_enable, mem_enable, inst_addr, inst_data, mem_addr, mem_data, inst_done, mem_done, uart_tx
+    input rst, 
+    input uart_clk_i, 
+    input uart_rx, 
+    input uart_mode,
+    output uart_clk_o, 
+    output inst_enable, 
+    output mem_enable, 
+    output [31:0] uart_addr, 
+    output [31:0] uart_data, 
+    output uart_done, 
+    output uart_tx
     );
+    wire uart_enable;
+    wire [14:0] uart_addr_15;
+    assign uart_addr = {18'b0, uart_addr_15[13:0]};
+    uart_kernel kernel(
+        .uart_clk_i(uart_clk_i),
+        .uart_rst(rst),
+        .uart_rx(uart_rx),
+        
+        .uart_clk_o(uart_clk_o),
+        .uart_enable(uart_enable),
+        .uart_data(uart_data),
+        .uart_addr(uart_addr_15),
+        .uart_done(uart_done),
+        .uart_tx(uart_tx)
+    );
+    assign inst_enable = uart_mode & (~uart_addr_15[14]);
+    assign mem_enable = uart_mode & (uart_addr_15[14]);
+    
+//    input uart_clk_i, uart_rst, uart_rx,
+//        output uart_clk_o, uart_enable, uart_data, uart_addr, uart_done, uart_tx
     
 endmodule

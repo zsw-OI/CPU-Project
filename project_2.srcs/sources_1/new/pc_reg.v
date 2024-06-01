@@ -1,4 +1,5 @@
 `timescale 1ns / 1ps
+
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
 // Engineer: 
@@ -21,14 +22,15 @@
 
 
 module pc_reg(
-    input rst, cpu_clk, [31:0] next_pc, nop_in, [1:0] sr_ctrl,
-    output reg [31:0] pc_out, nop_out
+    input rst, input cpu_clk, input [31:0] next_pc, input [1:0] sr_ctrl,
+    output reg [31:0] pc_out, output reg nop_out
     );
+    `include "constants.v"
     always @(posedge cpu_clk or negedge rst) 
     begin
         if (~rst) begin
             pc_out <= 0;
-            nop_out <= 0;
+            nop_out <= 1;
         end
         else begin
             case (sr_ctrl)
@@ -40,17 +42,12 @@ module pc_reg(
             SR_REMAIN: begin
             //remain unchanged
             end
-            default: begin
-                if (nop_in) begin
-                    pc_out <= 0;
-                    nop_out <= 1;
-                end
-                else begin
+            default: 
+                begin
                     pc_out <= next_pc;
                     nop_out <= 0;
                 end
                 
-            end
             endcase
             
         end

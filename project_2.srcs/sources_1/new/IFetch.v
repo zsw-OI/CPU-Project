@@ -21,32 +21,26 @@
 
 
 module IFetch(
-    input clk, rst,
-    input branch,
-    input is_zero,
-    input set_pc,
-    input set_data,
-    input [31:0] offset,
-    input [31:0] inst_data,
-    output [31:0] inst,
-    output reg [31:0] pc = 0
+    input clk,
+    input [31:0] pc,
+//    input write_flag,
+    input uart_clk,
+    input uart_enable,
+    input [31:0] uart_data,
+    input [31:0]uart_addr,
+    input uart_done,
+//    input [31:0] inst_data,
+    output [31:0] inst
 );
-
-reg wb = 0;
-
-//pretend to access memory.
-mem_block inst_mem(.clka(clk), .wea(set_data), .addra(pc[13:0]), .dina(inst_data), .douta(inst));
-
-always @(negedge clk, negedge rst) begin
-    if(!rst)begin
-        pc <= 0;
-        wb <= 0;
-    end else begin
-        if(wb) begin
-            pc <= (set_pc ? pc : 0) + ((branch && !is_zero) ? offset : 4);
-        end
-        wb = wb ^ 1;
-    end
-end
+wire uart_en;
+assign uart_en = uart_enable & (~uart_done);
+mem_block inst_mem(
+    .clka(uart_en ? (~uart_clk) : ~clk), 
+//    .wea(uart_enable && write_flag), 
+    .wea(uart_en), 
+    .addra(uart_en ? uart_addr[13:0] : pc[15:2]), 
+    .dina(uart_data), 
+    .douta(inst)
+);
 
 endmodule

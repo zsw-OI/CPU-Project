@@ -21,10 +21,11 @@
 
 
 module hazard_checker(
-    input [4:0] ID_idx1, [4:0] ID_idx2, alu_op_flag,
-          [4:0] EX_dst, [2:0] EX_reg_write,
+    input [4:0] ID_idx1, input [4:0] ID_idx2, input alu_op_flag,
+          input [4:0] EX_dst, input [2:0] EX_reg_write,
     output nop_flag
     );
+    `include "constants.v"
     assign nop_flag = (EX_dst != 0) && alu_op_flag && 
                     (ID_idx1 == EX_dst || ID_idx2 == EX_dst) &&
                     (EX_reg_write == REG_MEM_W);

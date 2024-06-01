@@ -21,8 +21,8 @@
 
 
 module uart_kernel(
-    input uart_clk_i, uart_rst, uart_rx,
-    output uart_clk_o, uart_enable, uart_data, uart_addr, uart_done, uart_tx
+    input uart_clk_i, input uart_rst, input uart_rx,
+    output uart_clk_o, output uart_enable, output [31:0] uart_data, output [14:0] uart_addr, output uart_done, output uart_tx
     );
     uart_bmpg_0 kernal(
         .upg_clk_i(uart_clk_i),

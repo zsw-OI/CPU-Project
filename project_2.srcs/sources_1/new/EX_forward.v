@@ -21,12 +21,12 @@
 
 
 module EX_forward(
-    input [4:0] EX_idx, [31:0] EX_data,
-        [4:0] mem_dst, [31:0] mem_alu_result, [31:0] mem_mem_result, [2:0] mem_reg_write,
-        [4:0] WB_dst, [31:0] WB_alu_result, [31:0] WB_mem_result, [2:0] WB_reg_write,
+    input [4:0] EX_idx, input [31:0] EX_data,
+        input [4:0] mem_dst, input [31:0] mem_alu_result, input [31:0] mem_mem_result, input [2:0] mem_reg_write,
+        input [4:0] WB_dst, input [31:0] WB_alu_result, input [31:0] WB_mem_result, input [2:0] WB_reg_write,
     output reg [31:0] res_data
 );
-
+    `include "constants.v"
     always @(*) begin
         if (EX_idx != 0) begin
             if (mem_dst == EX_idx) begin
