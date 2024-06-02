@@ -39,6 +39,8 @@ module memory(
 );
 `include "constants.v"
 
+initial output_data = 0;
+
 wire [31:0] data;
 wire [1:0] offset;
 reg [31:0] data_w;
@@ -47,11 +49,14 @@ wire uart_en;
 assign uart_en = uart_enable & (~uart_done);
 assign offset = addr[1:0];
 
+wire [31:0] r_addr;
+assign r_addr = addr - ADDR_OFFSET;
+
 mem_block2 data_mem(
-    .clka(uart_en ? ~uart_clk : ~clk), 
+    .clka(uart_en ? uart_clk : ~clk), 
 //    .wea(write_flag), 
-    .wea(uart_en | write_flag),
-    .addra(uart_en ? uart_addr[13:0] : addr[15:2]), 
+    .wea(uart_en | (write_flag & mem_op != MEM_OUT)),
+    .addra(uart_en ? uart_addr[13:0] : r_addr[15:2]), 
     .dina(uart_en ? uart_data : data_w), 
     .douta(data)
 );
@@ -99,14 +104,25 @@ always @(*) begin
         MEM_SB: data_w = byte_in;
         MEM_SH: data_w = hw_in;
         MEM_SW: data_w = data_in;
-        MEM_OUT:begin
-            if(write_flag)begin
-                output_data = data_in;
-//                output_flag = 1;
-            end
-        end
+//        MEM_OUT:begin
+////            if(write_flag && rst)begin
+//              if(write_flag) begin
+//                output_data = data_in;
+////                output_flag = 1;
+//            end
+//        end
         default: data_w = 0;
     endcase
+//    if (!rst)
+//        output_data = 0;
+end
+
+always @(negedge clk or negedge rst) begin
+    if (~rst)
+        output_data <= 0;
+    else if (mem_op == MEM_OUT && write_flag)
+        output_data <= data_in; 
+        
 end
 
 endmodule

@@ -103,6 +103,7 @@ always @* begin
         dst_idx = rd;
 
         func3 = FUN3_SET2;
+        func7 = FUN7_SP;
         use_alu = 1;
         jmp = 1;
     end
@@ -142,6 +143,7 @@ always @* begin
                     10: begin
                         exit = 1;
                         ecall_pause = 0;
+                        read_pause = 0;
                     end
                     5:begin
                         mem_op = MEM_IN;
@@ -156,9 +158,19 @@ always @* begin
                         sw_data = reg_data[REG_A0];
                         mem_write = 1;
                         ecall_pause = 0;
+                        read_pause = 0;
                     end
                 endcase
             end
+        end
+        else begin 
+            if (!ecall_enable) begin
+                ecall_pause = 1;
+            end else begin
+                read_pause = 1;
+                ecall_pause = 0;
+            end
+//            ecall_pause = 1;
         end
     end
 
@@ -208,6 +220,7 @@ always @* begin
         data2 = pc + 4;
         dst_idx = rd;
         func3 = FUN3_SET2;
+        func7 = FUN7_SP;
         jmp = 1;
     end
     //R type
@@ -232,17 +245,22 @@ integer i;
 always @(negedge clk, negedge rst) begin
     if(!rst) begin
         for(i = 0; i < 32; i = i + 1)begin
-            reg_data[i] <= 0;
+            if (i != 2)
+                reg_data[i] <= 0;
+        reg_data[2] <= 65536;
+            
         end
     end else begin
-
-        case(reg_write_flag)
-            REG_ALU_W: reg_data[dst] <= alu_res;
-            REG_MEM_W: reg_data[dst] <= mem_res;
-            default:begin
-                //nop
-            end
-        endcase
+        if (dst != 0) begin
+            case(reg_write_flag)
+                REG_ALU_W: reg_data[dst] <= alu_res;
+                REG_MEM_W: reg_data[dst] <= mem_res;
+                default:begin
+                    //nop
+                end
+            endcase
+        end
+        
     end
 end
 

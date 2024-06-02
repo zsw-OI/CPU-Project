@@ -11,7 +11,7 @@ parameter ALU_SRL = 4'b0101;
 parameter ALU_SRA = 4'b1101;
 parameter ALU_OR  = 4'b0110;
 parameter ALU_AND = 4'b0111;
-parameter ALU_SET2= 4'b1001;
+parameter ALU_SET2= 4'b1011;
 parameter ALU_NOP = 4'b1100;
 
 parameter FUN3_ADD = 3'b000;
@@ -70,6 +70,6 @@ parameter SR_NOP = 2'b10;
 parameter REG_A7 = 17;
 parameter REG_A0 = 10;
 
-parameter ADDR_OFFSET = 4'hfc10;
+parameter ADDR_OFFSET = 32'hfc10000;
 
 //`endif

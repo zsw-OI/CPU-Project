@@ -30,13 +30,13 @@ module pc_reg(
     begin
         if (~rst) begin
             pc_out <= 0;
-            nop_out <= 1;
+            nop_out <= 0;
         end
         else begin
             case (sr_ctrl)
             SR_NOP: begin
                 pc_out <= 0;
-                nop_out <= 1;
+                nop_out <= 0;
             end
                 
             SR_REMAIN: begin

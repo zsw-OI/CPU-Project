@@ -25,10 +25,12 @@ module control_plane(
     input ctr_clk, input rst, input local_rst, input start, input pause, input exit, input nop_flag, input branch_flag, 
     input ID_nop, input EX_nop, input mem_nop,
     output reg [1:0] pc_ctrl, output reg [1:0] IF_ctrl, output reg [1:0] ID_ctrl, output reg [1:0] EX_ctrl, output reg [1:0] mem_ctrl,
-    output is_clear
+    output is_clear,
+    output [1:0] state_out
     );
     `include "constants.v"
     reg [1:0] state = 2'b00;
+    assign state_out = state;
     parameter ST_REST = 2'b00;
     parameter ST_RUN = 2'b01;
     parameter ST_PAUSE = 2'b10;
@@ -54,18 +56,8 @@ module control_plane(
                 EX_ctrl <= SR_NOP;
                 mem_ctrl <= SR_NOP;
             end
-            else if (pause) begin
-                if (state == ST_RUN) begin
-                    state <= ST_PAUSE;
-                    pc_ctrl <= SR_REMAIN;
-                    IF_ctrl <= SR_REMAIN;
-                    ID_ctrl <= SR_NOP;
-                    EX_ctrl <= SR_NORMAL;
-                    mem_ctrl <= SR_NORMAL;
-                end
-            end
-            else if (exit) begin
-                if (state == ST_RUN) begin
+            else if (exit && (state == ST_RUN || state == ST_PAUSE)) begin
+                if (state == ST_RUN || state == ST_PAUSE) begin
                     state <= ST_EXIT;
                     pc_ctrl <= SR_NOP;
                     IF_ctrl <= SR_NOP;
@@ -74,7 +66,23 @@ module control_plane(
                     mem_ctrl <= SR_NORMAL;
                 end
             end
-            else if (start) begin
+            else if (pause && state == ST_RUN ) begin
+                if (state == ST_RUN) begin
+                    state <= ST_PAUSE;
+                    pc_ctrl <= SR_REMAIN;
+                    IF_ctrl <= SR_REMAIN;
+                    ID_ctrl <= SR_NOP;
+                    EX_ctrl <= SR_NORMAL;
+                    mem_ctrl <= SR_NORMAL;
+//                      pc_ctrl <= SR_REMAIN;
+//                      IF_ctrl <= SR_REMAIN;
+//                      ID_ctrl <= SR_REMAIN;
+//                      EX_ctrl <= SR_REMAIN;
+//                      mem_ctrl <= SR_REMAIN;
+                end
+            end
+
+            else if (start && (state == ST_PAUSE || state == ST_REST)) begin
                 if (state == ST_PAUSE || state == ST_REST) begin
                     state <= ST_RUN;
                     if (nop_flag) begin 
@@ -103,9 +111,14 @@ module control_plane(
             else if (state == ST_PAUSE) begin
                 pc_ctrl <= SR_REMAIN;
                 IF_ctrl <= SR_REMAIN;
-                ID_ctrl <= SR_REMAIN;
-                EX_ctrl <= SR_REMAIN;
-                mem_ctrl <= SR_REMAIN;
+                ID_ctrl <= SR_NOP;
+                EX_ctrl <= SR_NORMAL;
+                mem_ctrl <= SR_NORMAL;
+//                    pc_ctrl <= SR_REMAIN;
+//                    IF_ctrl <= SR_REMAIN;
+//                    ID_ctrl <= SR_REMAIN;
+//                    EX_ctrl <= SR_REMAIN;
+//                    mem_ctrl <= SR_REMAIN;
             end
             else 
             if (state == ST_RUN) begin

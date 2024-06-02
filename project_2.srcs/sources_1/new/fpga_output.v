@@ -23,11 +23,21 @@
 module fpga_output(
     input cpu_clk, 
     input [31:0] odata,
-    output reg [3:0]sel1, 
-    output reg [3:0]sel2, 
-    output reg [7:0]seg_ctrl1, 
-    output reg [7:0] seg_ctrl2
+    input [1:0] state_in,
+    
+    output reg [3:0] sel1, 
+    output reg [3:0] sel2, 
+    output reg [7:0] seg_ctrl1, 
+    output reg [7:0] seg_ctrl2,
+    output [1:0] led,
+    output [7:0] debug_led
     );
+    initial begin
+        sel1 = 0;
+        sel2 = 0;
+        seg_ctrl1 = 0;
+        seg_ctrl2 = 0;
+    end
     wire integer num[7:0];
     assign num[0] = odata[3:0];
     assign num[1] = odata[7:4];
@@ -37,10 +47,11 @@ module fpga_output(
     assign num[5] = odata[23:20];
     assign num[6] = odata[27:24];
     assign num[7] = odata[31:28];
-    
+    assign led = state_in;
+    assign debug_led = odata[7:0];
     reg tclk=1'b0;
-    reg [25:0] ct;
-    parameter period=50000;
+    reg [25:0] ct = 0;
+    parameter period=4000;
     always @(posedge cpu_clk)
     begin
         
@@ -73,25 +84,23 @@ module fpga_output(
                     sel2[i]<=1'b0;
                 end
            case(num[cnt])
-                0: seg_ctrl1 <= 8'b00111111;  // Display '0'
-                1: seg_ctrl1 <= 8'b00000110;  // Display '1' 
-                2: seg_ctrl1 <= 8'b01011011;  // Display '2'
-                3: seg_ctrl1 <= 8'b01001111;  // Display '3'
-                4: seg_ctrl1 <= 8'b01100110;  // Display '4'
-                5: seg_ctrl1 <= 8'b01101101;  // Display '5'
-                
-                
-                6: seg_ctrl1 <= 8'b01111101;  // Display '6'
-                7: seg_ctrl1 <= 8'b00000111;  // Display '7'
-                8: seg_ctrl1 <= 8'b01111111;  // Display '8'
-                9: seg_ctrl1 <= 8'b01101111;  // Display '9'
-                10: seg_ctrl1 <= 8'b11111111; 
-                11: seg_ctrl1 <= 8'b11111111; 
-                12: seg_ctrl1 <= 8'b11111111; 
-                13: seg_ctrl1 <= 8'b11111111; 
-                14: seg_ctrl1 <= 8'b11111111; 
-                15: seg_ctrl1 <= 8'b11111111; 
-                default: seg_ctrl1 <= 8'b00000000;  // Display nothing
+               0: seg_ctrl1 <= 8'b00111111;  // Display '0'
+               1: seg_ctrl1 <= 8'b00000110;  // Display '1' 
+               2: seg_ctrl1 <= 8'b01011011;  // Display '2'
+               3: seg_ctrl1 <= 8'b01001111;  // Display '3'
+               4: seg_ctrl1 <= 8'b01100110;  // Display '4'
+               5: seg_ctrl1 <= 8'b01101101;  // Display '5'
+               6: seg_ctrl1 <= 8'b01111101;  // Display '6'
+               7: seg_ctrl1 <= 8'b00000111;  // Display '7'
+               8: seg_ctrl1 <= 8'b01111111;  // Display '8'
+               9: seg_ctrl1 <= 8'b01101111;  // Display '9'
+               10: seg_ctrl1 <= 8'b01110111;  // Display 'A'
+               11: seg_ctrl1 <= 8'b01111100;  // Display 'B'
+               12: seg_ctrl1 <= 8'b00111001;  // Display 'C'
+               13: seg_ctrl1 <= 8'b01011110;  // Display 'D'
+               14: seg_ctrl1 <= 8'b01111001;  // Display 'E'
+               15: seg_ctrl1 <= 8'b01110001;  // Display 'F'
+               default: seg_ctrl1 <= 8'b00000000;  // Display nothing
           
            endcase
            case(num[cnt+4])
@@ -105,12 +114,13 @@ module fpga_output(
                7: seg_ctrl2 <= 8'b00000111;  // Display '7'
                8: seg_ctrl2 <= 8'b01111111;  // Display '8'
                9: seg_ctrl2 <= 8'b01101111;  // Display '9'
-               10: seg_ctrl1 <= 8'b11111111; 
-               11: seg_ctrl1 <= 8'b11111111; 
-               12: seg_ctrl1 <= 8'b11111111; 
-               13: seg_ctrl1 <= 8'b11111111; 
-               14: seg_ctrl1 <= 8'b11111111; 
-               15: seg_ctrl1 <= 8'b11111111; 
+               10: seg_ctrl2 <= 8'b01110111;  // Display 'A'
+               11: seg_ctrl2 <= 8'b01111100;  // Display 'B'
+               12: seg_ctrl2 <= 8'b00111001;  // Display 'C'
+               13: seg_ctrl2 <= 8'b01011110;  // Display 'D'
+               14: seg_ctrl2 <= 8'b01111001;  // Display 'E'
+               15: seg_ctrl2 <= 8'b01110001;  // Display 'F'
+              
                default: seg_ctrl2 <= 8'b00000000;  // Display nothing
            endcase
             

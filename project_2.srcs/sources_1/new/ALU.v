@@ -50,7 +50,7 @@ always @* begin
         op2 = imm;
         sp_op = 0;
     end
-    alu_op = (func3 == FUN3_SET2 ? ALU_SET2 : {sp_op, func3});
+    alu_op = (func3 == FUN3_SET2 && func7 == FUN7_SP ? ALU_SET2 : {sp_op, func3});
 
     case(alu_op)
         ALU_ADD: res = op1 + op2;

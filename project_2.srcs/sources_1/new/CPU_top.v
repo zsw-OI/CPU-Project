@@ -26,16 +26,17 @@ module cpu_top(
     input local_rst_in, 
     input start_in, 
     input pause_in, 
-    input enter_in, 
     input uart_mode_in, 
     input [7:0] idata_in,
     
     input uart_rx,
-    
+    output [1:0]led,
     output [3:0]sel1, 
     output [3:0]sel2, 
     output [7:0]seg_ctrl1, 
     output [7:0] seg_ctrl2,
+    
+    output [7:0] debug_led,
     
     output uart_tx
 );
@@ -49,9 +50,10 @@ cpu_clk clk_gen(
     .uart_clk(uart_clk)
 );
 
-wire rst, local_rst, start, pause, enter, uart_mode;
+wire rst, local_rst, start, pause, uart_mode;
 wire [31:0] idata;
 wire [31:0] odata;
+wire [1:0] state_in;
 
 fpga_io _fpga_io(
     .cpu_clk(cpu_clk),
@@ -59,10 +61,10 @@ fpga_io _fpga_io(
     .local_rst_in(local_rst_in),
     .start_in(start_in),
     .pause_in(pause_in),
-    .enter_in(enter_in),
     .uart_mode_in(uart_mode_in),
     .idata_in(idata_in),
     .odata_in(odata),
+    .state_in(state_in),
     
     .sel1(sel1),
     .sel2(sel2),
@@ -72,18 +74,19 @@ fpga_io _fpga_io(
     .local_rst_out(local_rst),
     .start_out(start),
     .pause_out(pause),
-    .enter_out(enter),
     .uart_mode_out(uart_mode),
-    .reg_idata(idata)
+    .reg_idata(idata),
+    .led(led)
+//    .debug_led(debug_led)
 );
-
+//assign debug_led = odata[7:0];
 wire uart_clk_o, inst_enable, mem_enable;
 wire [31:0] uart_addr;
 wire [31:0] uart_data;
 wire uart_done;
 
 uart_io _uart_io(
-    .rst(rst),
+    .rst(~rst),
     .uart_clk_i(uart_clk),
     .uart_rx(uart_rx),
     .uart_mode(uart_mode),
@@ -178,14 +181,24 @@ wire r_start, r_pause;
 wire is_clear;
 
 wire read_pause;
+
+wire [31:0] pause_unit_cnt;
+assign debug_led = ID_pc_reg[9:2];
+//assign debug_led = EX_alu_result_out[7:0];
+//assign debug_led = WB_alu_result_reg[7:0];
+//assign debug_led = ID_sw_data_out;
+//assign debug_led = EX_sw_data_reg[7:0];
+//assign debug_led = pause_unit_cnt[7:0];
 pause_unit _pause_unit(
-    .rst(rst),
+    .rst(rst & (~local_rst)),
+    .cpu_clk(cpu_clk),
     .ecall_pause(ecall_pause),
     .board_start(start),
     .board_pause(pause),
     .read_pause(read_pause),
     .start(r_start),
-    .pause(r_pause)
+    .pause(r_pause),
+    .debug_led(pause_unit_cnt)
 );
 
 control_plane _control_plane(
@@ -205,7 +218,8 @@ control_plane _control_plane(
     .ID_ctrl(ID_sr_ctrl),
     .EX_ctrl(EX_sr_ctrl),
     .mem_ctrl(mem_sr_ctrl),
-    .is_clear(is_clear)
+    .is_clear(is_clear),
+    .state_out(state_in)
 );
 
 //module control_plane(
@@ -263,7 +277,7 @@ IF_ID_reg _IF_ID_reg(
 
 Decoder _Decoder(
     .clk(cpu_clk),
-    .rst(rst),
+    .rst(rst & (~local_rst)),
     .inst(ID_inst_reg),
     .dst(WB_dst_idx_reg),
     .alu_res(WB_alu_result_reg),
@@ -456,7 +470,7 @@ EX_mem_reg _EX_mem_reg(
 
 memory _memory(
     .clk(cpu_clk),
-    .rst(rst),
+    .rst(rst & (~local_rst)),
     .write_flag(mem_mem_write_reg),
     .mem_op(mem_mem_op_reg),
     .addr(mem_alu_result_reg),

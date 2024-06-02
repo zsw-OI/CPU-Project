@@ -35,7 +35,7 @@ module IFetch(
 wire uart_en;
 assign uart_en = uart_enable & (~uart_done);
 mem_block inst_mem(
-    .clka(uart_en ? (~uart_clk) : ~clk), 
+    .clka(uart_en ? uart_clk : ~clk), 
 //    .wea(uart_enable && write_flag), 
     .wea(uart_en), 
     .addra(uart_en ? uart_addr[13:0] : pc[15:2]), 

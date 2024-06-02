@@ -48,8 +48,8 @@ module uart_io(
         .uart_done(uart_done),
         .uart_tx(uart_tx)
     );
-    assign inst_enable = uart_mode & (~uart_addr_15[14]);
-    assign mem_enable = uart_mode & (uart_addr_15[14]);
+    assign inst_enable = uart_mode & (~uart_addr_15[14]) & uart_enable;
+    assign mem_enable = uart_mode & (uart_addr_15[14]) & uart_enable;
     
 //    input uart_clk_i, uart_rst, uart_rx,
 //        output uart_clk_o, uart_enable, uart_data, uart_addr, uart_done, uart_tx

@@ -26,10 +26,10 @@ module fpga_io(
     input local_rst_in, 
     input start_in, 
     input pause_in, 
-    input enter_in, 
     input uart_mode_in, 
     input [7:0] idata_in,
     input [31:0] odata_in,
+    input [1:0] state_in, 
     output [3:0]sel1, 
     output [3:0]sel2, 
     output [7:0]seg_ctrl1, 
@@ -38,9 +38,10 @@ module fpga_io(
     output local_rst_out, 
     output start_out, 
     output pause_out, 
-    output enter_out, 
     output uart_mode_out, 
-    output reg [31:0] reg_idata
+    output reg [31:0] reg_idata,
+    output [1:0] led,
+    output [7:0] debug_led
     );
     wire [31:0] idata_out;
     fpga_input f_input(
@@ -49,26 +50,27 @@ module fpga_io(
         .local_rst_in(local_rst_in),
         .start_in(start_in),
         .pause_in(pause_in),
-        .enter_in(enter_in),
         .uart_mode_in(uart_mode_in),
         .data_in(idata_in),
         .rst_out(rst_out),
         .local_rst_out(local_rst_out),
         .start_out(start_out),
         .pause_out(pause_out),
-        .enter_out(enter_out),
         .data_out(idata_out),
         .uart_mode_out(uart_mode_out)
          );
      fpga_output f_output(
         .cpu_clk(cpu_clk),
         .odata(odata_in),
+        .state_in(state_in),
         .sel1(sel1),
         .sel2(sel2),
         .seg_ctrl1(seg_ctrl1),
-        .seg_ctrl2(seg_ctrl2)
+        .seg_ctrl2(seg_ctrl2),
+        .led(led),
+        .debug_led(debug_led)
      );
-     always @(posedge enter_out or negedge rst_out)
+     always @(posedge start_out or negedge rst_out)
      begin
         if (~rst_out)
             reg_idata <= 0;
